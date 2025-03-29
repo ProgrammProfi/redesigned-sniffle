@@ -1,3 +1,4 @@
+# coding=utf-8
 import telebot  # библиотека telebot
 from config import token  # импорт токена
 
@@ -24,6 +25,21 @@ def ban_user(message):
             bot.reply_to(message, f"Пользователь @{message.reply_to_message.from_user.username} был забанен.")
     else:
         bot.reply_to(message, "Эта команда должна быть использована в ответ на сообщение пользователя, которого вы хотите забанить.")
+
+
+@bot.message_handler(func=lambda: True)
+def ban_link(msg):
+    if "https://" in msg.text or "http://" in msg.text:
+        chat_id = msg.chat.id  # сохранение id чата
+        # сохранение id и статуса пользователя, отправившего сообщение
+        user_id = msg.reply_to_message.from_user.id
+        user_status = bot.get_chat_member(chat_id, user_id).status
+        # проверка пользователя
+        if user_status == 'administrator' or user_status == 'creator':
+            return
+        else:
+            bot.ban_chat_member(chat_id, user_id)  # пользователь с user_id будет забанен в чате с chat_id
+            bot.reply_to(msg, f"Пользователь @{msg.reply_to_message.from_user.username} был забанен за использование ссылок.")
 
 
 bot.infinity_polling(none_stop=True)
